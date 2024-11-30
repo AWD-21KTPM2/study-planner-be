@@ -16,6 +16,15 @@ async function bootstrap() {
   // Create Swagger document
   const document = SwaggerModule.createDocument(app, config);
 
+  const sortedPaths = Object.keys(document.paths)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = document.paths[key];
+      return acc;
+    }, {});
+
+  document.paths = sortedPaths;
+
   // Setup Swagger module
   SwaggerModule.setup('api-doc', app, document);
 

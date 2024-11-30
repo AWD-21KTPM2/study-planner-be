@@ -13,6 +13,11 @@ import {
 import { InvalidRefreshToken } from 'src/common/exceptions/jwt.exception';
 import { AUTH_CONST } from 'src/common/constants/auth.const';
 import { JwtPayload } from 'src/common/types/jwt.type';
+import { JwtRefreshTokenDto } from './dto/jwt-refresh-token.dto';
+import { LoginUserDto } from './dto/login-user.dto';
+import { RegisterUserResponse } from 'src/common/types/user.type';
+import { toString } from '../../../node_modules/@types/validator/index.d';
+import { convertTime } from 'src/common/utils/time.util';
 
 @Injectable()
 export class UserService {
@@ -23,7 +28,10 @@ export class UserService {
   ) {}
 
   // Registration method without token generation
-  async registerUser(userData: { email: string; password: string }) {
+  async registerUser(userData: {
+    email: string;
+    password: string;
+  }): Promise<RegisterUserResponse> {
     const { email, password } = userData;
 
     // Check if user exists
@@ -43,15 +51,15 @@ export class UserService {
     await newUser.save();
 
     return {
-      message: AUTH_CONST.REGISTER_SUCCESS,
-      data: {
-        email: newUser.email,
-      },
+      id: newUser._id.toString(),
+      email: newUser.email,
+      createdAt: convertTime(newUser.createdAt),
+      updatedAt: convertTime(newUser.updatedAt),
     };
   }
 
   // Login method with token generation
-  async loginUser(userData: { email: string; password: string }) {
+  async loginUser(userData: LoginUserDto) {
     const { email, password } = userData;
     const refreshTokenExpiration = this.configService.get<string>(
       JWT_CONST.JWT_REFRESH_EXPIRES_IN,
@@ -84,65 +92,44 @@ export class UserService {
     payload.accessToken = accessToken;
     payload.refreshToken = refreshToken;
 
-    return {
-      message: AUTH_CONST.LOGIN_SUCCESS,
-      data: payload,
-    };
+    return payload;
   }
 
   // Method to refresh tokens
-  async refreshTokens(refreshToken: string) {
-    const refreshTokenExpiration = this.configService.get<string>(
-      JWT_CONST.JWT_REFRESH_EXPIRES_IN,
-    );
-
+  async refreshToken(tokenData: JwtRefreshTokenDto): Promise<JwtPayload> {
     // Decode and verify the refresh token
-    let payload: any;
+    let payload: JwtPayload;
     try {
-      payload = this.jwtService.verify(refreshToken);
+      payload = this.jwtService.verify(tokenData.refreshToken);
     } catch (e) {
       throw new InvalidRefreshToken();
     }
 
-    const userId = payload.sub;
+    const userId = payload.id;
 
     // Find user by ID
     const user = await this.userModel.findById(userId);
+
     if (!user || !user.refreshToken) {
       throw new InvalidRefreshToken();
     }
 
-    // Validate the provided refresh token with the hashed token
-    const isRefreshTokenValid = await bcrypt.compare(
-      refreshToken,
-      user.refreshToken,
-    );
-    if (!isRefreshTokenValid) {
+    if (user.refreshToken !== tokenData.refreshToken) {
       throw new InvalidRefreshToken();
     }
 
     // Generate new access token and refresh token
     const newAccessToken = this.jwtService.sign({
-      email: user.email,
-      sub: user._id,
+      id: payload.id,
+      email: payload.email,
     });
-    const newRefreshToken = this.jwtService.sign(
-      { email: user.email, sub: user._id },
-      {
-        expiresIn: refreshTokenExpiration,
-      },
-    );
 
-    // Update and save the new refresh token
-    user.refreshToken = await bcrypt.hash(newRefreshToken, 10);
-    await user.save();
+    payload.accessToken = newAccessToken;
 
     return {
-      message: JWT_CONST.JWT_REFRESH_TOKEN_SUCCESS,
-      data: {
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-      },
+      id: payload.id,
+      email: payload.email,
+      accessToken: newAccessToken,
     };
   }
 }

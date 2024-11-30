@@ -3,8 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
 import { JWT_CONST } from 'src/common/constants/jwt.const';
-import dayjs from 'dayjs';
+
 import { InvalidOrExpiredToken } from 'src/common/exceptions/jwt.exception';
+import { convertTimeFromSeconds } from 'src/common/utils/time.util';
 
 @Injectable()
 export class JwtMiddleware implements NestMiddleware {
@@ -26,12 +27,11 @@ export class JwtMiddleware implements NestMiddleware {
       const decoded = this.jwtService.verify(token, { secret });
 
       // Convert iat and exp to ISO format if present
-      decoded.iat = dayjs.unix(decoded.iat).toISOString();
-      decoded.exp = dayjs.unix(decoded.exp).toISOString();
+      decoded.iat = convertTimeFromSeconds(decoded.iat);
+      decoded.exp = convertTimeFromSeconds(decoded.exp);
 
       req['user'] = decoded;
     } catch (error) {
-      console.log('decoded3', error);
       throw new InvalidOrExpiredToken();
     }
 
