@@ -12,6 +12,7 @@ import {
 } from 'src/common/exceptions/auth.exception';
 import { InvalidRefreshToken } from 'src/common/exceptions/jwt.exception';
 import { AUTH_CONST } from 'src/common/constants/auth.const';
+import { JwtPayload } from 'src/common/types/jwt.type';
 
 @Injectable()
 export class UserService {
@@ -69,8 +70,7 @@ export class UserService {
     }
 
     // Generate JWT token
-    const payload = { email: user.email, sub: user._id };
-    const token = this.jwtService.sign(payload);
+    const payload: JwtPayload = { id: user._id.toString(), email: user.email };
 
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, {
@@ -81,14 +81,12 @@ export class UserService {
     user.refreshToken = refreshToken;
     await user.save();
 
+    payload.accessToken = accessToken;
+    payload.refreshToken = refreshToken;
+
     return {
       message: AUTH_CONST.LOGIN_SUCCESS,
-      data: {
-        id: user._id,
-        email: user.email,
-        accessToken,
-        refreshToken,
-      },
+      data: payload,
     };
   }
 

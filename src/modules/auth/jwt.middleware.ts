@@ -1,9 +1,10 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { Request, Response, NextFunction } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { NextFunction, Request, Response } from 'express';
 import { JWT_CONST } from 'src/common/constants/jwt.const';
-import { UnAuthorizedException } from 'src/common/exceptions/auth.exception';
+import dayjs from 'dayjs';
+import { InvalidOrExpiredToken } from 'src/common/exceptions/jwt.exception';
 
 @Injectable()
 export class JwtMiddleware implements NestMiddleware {
@@ -23,9 +24,15 @@ export class JwtMiddleware implements NestMiddleware {
     try {
       const secret = this.configService.get<string>(JWT_CONST.JWT_SECRET);
       const decoded = this.jwtService.verify(token, { secret });
-      req['user'] = decoded; // Attach decoded token data to request
+
+      // Convert iat and exp to ISO format if present
+      decoded.iat = dayjs.unix(decoded.iat).toISOString();
+      decoded.exp = dayjs.unix(decoded.exp).toISOString();
+
+      req['user'] = decoded;
     } catch (error) {
-      throw new UnAuthorizedException();
+      console.log('decoded3', error);
+      throw new InvalidOrExpiredToken();
     }
 
     next();

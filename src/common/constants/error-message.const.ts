@@ -7,6 +7,7 @@ export const ERROR_MESSAGE = {
 
   // JWT
   [ERROR_CODE.JWT_INVALID_REFRESH_TOKEN]: 'Invalid refresh token',
+  [ERROR_CODE.JWT_INVALID_OR_EXPIRED_TOKEN]: 'Invalid or expired token',
 
   // AUTH
   [ERROR_CODE.AUTH_EMAIL_EXISTED]: 'Email already in use',

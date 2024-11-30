@@ -6,10 +6,10 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserService } from './user.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegistryUserDto } from './dto/registry-user.dto';
+import { UnAuthorizedException } from 'src/common/exceptions/auth.exception';
 
 @ApiTags('users')
 @Controller('user')
@@ -36,7 +36,7 @@ export class UserController {
   @ApiOkResponse({ description: 'User profile' })
   getProfile(@Req() req: Request) {
     if (!req['user']) {
-      return { message: 'No user logged in' };
+      throw new UnAuthorizedException();
     }
     return {
       message: 'User profile',
