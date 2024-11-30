@@ -4,12 +4,21 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { JWT_CONST } from 'src/common/constants/jwt.const';
+import {
+  EmailExistedException,
+  InvalidCredentialsException,
+} from 'src/common/exceptions/auth.exception';
+import { InvalidRefreshToken } from 'src/common/exceptions/jwt.exception';
+import { AUTH_CONST } from 'src/common/constants/auth.const';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   // Registration method without token generation
@@ -19,7 +28,7 @@ export class UserService {
     // Check if user exists
     const existingUser = await this.userModel.findOne({ email });
     if (existingUser) {
-      throw new HttpException('Email already in use', HttpStatus.BAD_REQUEST);
+      throw new EmailExistedException();
     }
 
     // Hash password
@@ -33,7 +42,7 @@ export class UserService {
     await newUser.save();
 
     return {
-      message: 'User registered successfully',
+      message: AUTH_CONST.REGISTER_SUCCESS,
       data: {
         email: newUser.email,
       },
@@ -43,29 +52,98 @@ export class UserService {
   // Login method with token generation
   async loginUser(userData: { email: string; password: string }) {
     const { email, password } = userData;
+    const refreshTokenExpiration = this.configService.get<string>(
+      JWT_CONST.JWT_REFRESH_EXPIRES_IN,
+    );
 
     // Find user by email
     const user = await this.userModel.findOne({ email });
     if (!user) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      throw new InvalidCredentialsException();
     }
 
     // Validate password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      throw new InvalidCredentialsException();
     }
 
     // Generate JWT token
     const payload = { email: user.email, sub: user._id };
     const token = this.jwtService.sign(payload);
 
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: refreshTokenExpiration,
+    });
+
+    // Save refresh token to user
+    user.refreshToken = refreshToken;
+    await user.save();
+
     return {
-      message: 'Login successful',
+      message: AUTH_CONST.LOGIN_SUCCESS,
       data: {
         id: user._id,
         email: user.email,
-        token,
+        accessToken,
+        refreshToken,
+      },
+    };
+  }
+
+  // Method to refresh tokens
+  async refreshTokens(refreshToken: string) {
+    const refreshTokenExpiration = this.configService.get<string>(
+      JWT_CONST.JWT_REFRESH_EXPIRES_IN,
+    );
+
+    // Decode and verify the refresh token
+    let payload: any;
+    try {
+      payload = this.jwtService.verify(refreshToken);
+    } catch (e) {
+      throw new InvalidRefreshToken();
+    }
+
+    const userId = payload.sub;
+
+    // Find user by ID
+    const user = await this.userModel.findById(userId);
+    if (!user || !user.refreshToken) {
+      throw new InvalidRefreshToken();
+    }
+
+    // Validate the provided refresh token with the hashed token
+    const isRefreshTokenValid = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
+    if (!isRefreshTokenValid) {
+      throw new InvalidRefreshToken();
+    }
+
+    // Generate new access token and refresh token
+    const newAccessToken = this.jwtService.sign({
+      email: user.email,
+      sub: user._id,
+    });
+    const newRefreshToken = this.jwtService.sign(
+      { email: user.email, sub: user._id },
+      {
+        expiresIn: refreshTokenExpiration,
+      },
+    );
+
+    // Update and save the new refresh token
+    user.refreshToken = await bcrypt.hash(newRefreshToken, 10);
+    await user.save();
+
+    return {
+      message: JWT_CONST.JWT_REFRESH_TOKEN_SUCCESS,
+      data: {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
       },
     };
   }

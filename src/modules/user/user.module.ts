@@ -5,6 +5,7 @@ import { UserController } from './user.controller';
 import { User, UserSchema } from './entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JWT_CONST } from 'src/common/constants/jwt.const';
 
 @Module({
   imports: [
@@ -13,9 +14,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
+        secret: configService.get<string>(JWT_CONST.JWT_SECRET),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN'),
+          expiresIn: configService.get<string>(JWT_CONST.JWT_ACCESS_EXPIRES_IN),
         },
       }),
     }),

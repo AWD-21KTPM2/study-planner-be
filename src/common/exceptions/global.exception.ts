@@ -6,6 +6,9 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
+import { COMMON_CONST } from '../constants/common.const';
+import { ERROR_MESSAGE } from '../constants/error-message.const';
+import { ERROR_CODE } from '../enums/error-code.enum';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -20,7 +23,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const message =
       exception instanceof HttpException
         ? exception.message
-        : 'Server is busy, please try again later! (Internal Server Error)';
+        : ERROR_MESSAGE[ERROR_CODE.SERVER_ERROR];
 
     if (status == 400) {
       if (exception.response.message instanceof Array) {
@@ -44,7 +47,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           ? { ...exception.response }
           : exception.response,
       stack:
-        this.config_service.get('PROJECT_ENVIRONMENT') !== 'prod'
+        this.config_service.get(COMMON_CONST.NODE_ENV) !== COMMON_CONST.PROD_ENV
           ? exception.stack
           : null,
     });

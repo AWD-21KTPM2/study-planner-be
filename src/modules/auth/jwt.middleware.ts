@@ -1,11 +1,9 @@
-import {
-  Injectable,
-  NestMiddleware,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response, NextFunction } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { JWT_CONST } from 'src/common/constants/jwt.const';
+import { UnAuthorizedException } from 'src/common/exceptions/auth.exception';
 
 @Injectable()
 export class JwtMiddleware implements NestMiddleware {
@@ -23,11 +21,11 @@ export class JwtMiddleware implements NestMiddleware {
     }
 
     try {
-      const secret = this.configService.get<string>('JWT_SECRET');
+      const secret = this.configService.get<string>(JWT_CONST.JWT_SECRET);
       const decoded = this.jwtService.verify(token, { secret });
       req['user'] = decoded; // Attach decoded token data to request
     } catch (error) {
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnAuthorizedException();
     }
 
     next();

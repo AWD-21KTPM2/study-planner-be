@@ -1,39 +1,39 @@
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Req,
-  HttpCode,
-} from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UserService } from './user.service';
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UserService } from './user.service';
+import { LoginUserDto } from './dto/login-user.dto';
+import { RegistryUserDto } from './dto/registry-user.dto';
 
+@ApiTags('users')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('register')
-  @HttpCode(201)
-  async register(@Body() userData: { email: string; password: string }) {
+  @ApiCreatedResponse({ description: 'User registered' })
+  @ApiBody({ type: RegistryUserDto })
+  async register(@Body() userData: RegistryUserDto) {
     return this.userService.registerUser(userData);
   }
 
   @Post('login')
-  @HttpCode(200)
-  async login(@Body() userData: { email: string; password: string }) {
+  @ApiBody({ type: LoginUserDto })
+  @ApiCreatedResponse({ description: 'User logged in' })
+  async login(@Body() userData: LoginUserDto) {
     return this.userService.loginUser(userData);
   }
 
-  @UseGuards(JwtAuthGuard) // Protect only this route
-  @HttpCode(200)
+  // @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('profile')
+  @ApiOkResponse({ description: 'User profile' })
   getProfile(@Req() req: Request) {
     if (!req['user']) {
       return { message: 'No user logged in' };
