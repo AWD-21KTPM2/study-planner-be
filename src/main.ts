@@ -7,10 +7,9 @@ async function bootstrap() {
 
   // Configure Swagger options
   const config = new DocumentBuilder()
-    .setTitle('API Documentation')
-    .setDescription('The API description')
+    .setTitle('Study planner API')
+    .setDescription('21KTPM2-AWD final project')
     .setVersion('1.0')
-    .addTag('APIs')
     .addBearerAuth()
     .build();
 
