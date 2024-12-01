@@ -7,6 +7,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
+import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegistryUserDto } from './dto/registry-user.dto';
 import { UnAuthorizedException } from 'src/common/exceptions/auth.exception';
@@ -14,11 +15,16 @@ import { JwtRefreshTokenDto } from './dto/jwt-refresh-token.dto';
 import { JWT_CONST } from 'src/common/constants/jwt.const';
 import { JwtPayload } from 'src/common/types/jwt.type';
 import { ResponseData } from 'src/common/types/common.type';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('users')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  // constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   @Post('register')
   @ApiCreatedResponse({ description: 'User registered' })
@@ -51,5 +57,39 @@ export class UserController {
       message: JWT_CONST.JWT_REFRESH_TOKEN_SUCCESS,
       data: refreshTokenResponse,
     } as ResponseData<Promise<JwtPayload>>;
+  }
+
+  // New endpoint for Google OAuth login
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  @ApiOkResponse({ description: 'Initiates Google OAuth' })
+  async googleAuth() {
+    // Initiates the Google OAuth flow
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  @ApiOkResponse({ description: 'Handles Google OAuth callback' })
+  async googleAuthRedirect(@Req() req: any) {
+    const user = req.user; // User data from Google Strategy
+    const jwtPayload = { id: user.id, email: user.email };
+
+    // Generate JWT token
+    const accessToken = this.jwtService.sign(jwtPayload);
+
+    return {
+      message: 'Login successful',
+      data: { user, accessToken },
+    };
+  }
+
+  @Post('google-login')
+  @ApiBody({
+    description: 'Login using Google token',
+    schema: { example: { token: 'GoogleIdToken' } },
+  })
+  @ApiCreatedResponse({ description: 'User logged in via Google' })
+  async googleLogin(@Body('token') token: string) {
+    return this.userService.googleLogin(token); // Delegates to a method in UserService
   }
 }
