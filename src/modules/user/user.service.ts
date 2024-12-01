@@ -59,6 +59,42 @@ export class UserService {
   }
 
   // Login method with token generation
+  // async loginUser(userData: LoginUserDto) {
+  //   const { email, password } = userData;
+  //   const refreshTokenExpiration = this.configService.get<string>(
+  //     JWT_CONST.JWT_REFRESH_EXPIRES_IN,
+  //   );
+
+  //   // Find user by email
+  //   const user = await this.userModel.findOne({ email });
+  //   if (!user) {
+  //     throw new InvalidCredentialsException();
+  //   }
+
+  //   // Validate password
+  //   const isPasswordValid = await bcrypt.compare(password, user.password);
+  //   if (!isPasswordValid) {
+  //     throw new InvalidCredentialsException();
+  //   }
+
+  //   // Generate JWT token
+  //   const payload: JwtPayload = { id: user._id.toString(), email: user.email };
+
+  //   const accessToken = this.jwtService.sign(payload);
+  //   const refreshToken = this.jwtService.sign(payload, {
+  //     expiresIn: refreshTokenExpiration,
+  //   });
+
+  //   // Save refresh token to user
+  //   user.refreshToken = refreshToken;
+  //   await user.save();
+
+  //   payload.accessToken = accessToken;
+  //   payload.refreshToken = refreshToken;
+
+  //   return payload;
+  // }
+
   async loginUser(userData: LoginUserDto) {
     const { email, password } = userData;
     const refreshTokenExpiration = this.configService.get<string>(
@@ -89,10 +125,15 @@ export class UserService {
     user.refreshToken = refreshToken;
     await user.save();
 
-    payload.accessToken = accessToken;
-    payload.refreshToken = refreshToken;
-
-    return payload;
+    return {
+      data: {
+        id: payload.id,
+        email: payload.email,
+        accessToken,
+        refreshToken,
+      },
+      message: 'Login successful',
+    };
   }
 
   // Method to refresh tokens
