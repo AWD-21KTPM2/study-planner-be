@@ -104,19 +104,31 @@ export class UserService {
     };
   }
 
-  // Google Login Method
-  async googleLogin(token: string) {
-    const ticket = await this.googleClient.verifyIdToken({
-      idToken: token,
-      audience: this.configService.get('GOOGLE_CLIENT_ID'),
-    });
-    const payload = ticket.getPayload();
+  async fetchGoogleProfile(token: string) {
+    const payload = await fetch(
+      `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
-    if (!payload) {
+    if (!payload.ok) {
       throw new HttpException('Invalid Google token', HttpStatus.UNAUTHORIZED);
     }
 
-    const { email } = payload;
+    return payload.json();
+  }
+  // Google Login Method
+  async googleLogin(token: string) {
+    const googleProfile = await this.fetchGoogleProfile(token);
+
+    if (!googleProfile) {
+      throw new HttpException('Invalid Google token', HttpStatus.UNAUTHORIZED);
+    }
+
+    const { email } = googleProfile;
     let user = await this.userModel.findOne({ email });
 
     if (!user) {

@@ -90,6 +90,7 @@ export class UserController {
   })
   @ApiCreatedResponse({ description: 'User logged in via Google' })
   async googleLogin(@Body('token') token: string) {
+    console.log('Google login token:', token);
     return this.userService.googleLogin(token); // Delegates to a method in UserService
   }
 }
