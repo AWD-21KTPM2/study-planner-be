@@ -59,6 +59,22 @@ export class UserController {
     } as ResponseData<Promise<JwtPayload>>;
   }
 
+  @ApiBearerAuth()
+  @Get('profile/details')
+  @ApiOkResponse({
+    description: 'User profile',
+    schema: { example: { email: 'example@email.com' } },
+  })
+  getProfileByEmail(@Req() req: any) {
+    const { email } = req.query;
+
+    if (!email) {
+      throw new UnAuthorizedException();
+    }
+
+    return this.userService.getProfileByEmail(email);
+  }
+
   // New endpoint for Google OAuth login
   @Get('google')
   @UseGuards(AuthGuard('google'))
@@ -90,7 +106,6 @@ export class UserController {
   })
   @ApiCreatedResponse({ description: 'User logged in via Google' })
   async googleLogin(@Body('token') token: string) {
-    console.log('Google login token:', token);
     return this.userService.googleLogin(token); // Delegates to a method in UserService
   }
 }

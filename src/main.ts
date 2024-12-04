@@ -28,7 +28,6 @@ async function bootstrap() {
   // Setup Swagger module
   SwaggerModule.setup('api-doc', app, document);
 
-  console.log('FE_URL:', process.env.FE_URL);
   app.enableCors({
     credentials: true,
     origin: process.env.FE_URL,

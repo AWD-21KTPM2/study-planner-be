@@ -148,16 +148,20 @@ export class UserService {
       email: user.email,
     };
     const accessToken = this.jwtService.sign(jwtPayload);
+    const refreshToken = this.jwtService.sign(jwtPayload, {
+      expiresIn: this.configService.get<string>(
+        JWT_CONST.JWT_REFRESH_EXPIRES_IN,
+      ),
+    });
 
     return {
       message: 'Google login successful',
       data: {
-        user: {
-          id: user._id.toString(),
-          email: user.email,
-          // name: user.name,
-          // profilePicture: user.profilePicture,
-        },
+        id: user._id.toString(),
+        email: user.email,
+        // name: user.name,
+        // profilePicture: user.profilePicture,
+        refreshToken,
         accessToken,
       },
     };
@@ -198,6 +202,19 @@ export class UserService {
       id: payload.id,
       email: payload.email,
       accessToken: newAccessToken,
+    };
+  }
+
+  async getProfileByEmail(email: string) {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return {
+      email: user.email,
+      createdAt: convertTime(user.createdAt),
     };
   }
 }
