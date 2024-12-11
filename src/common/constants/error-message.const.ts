@@ -13,4 +13,13 @@ export const ERROR_MESSAGE = {
   [ERROR_CODE.AUTH_EMAIL_EXISTED]: 'Email already in use',
   [ERROR_CODE.AUTH_INVALID_CREDENTIALS]: 'Invalid credentials',
   [ERROR_CODE.AUTH_UNAUTHORIZED]: 'Unauthorized',
+
+  // USER
+  [ERROR_CODE.USER_NOT_FOUND]: 'User not found',
+
+  // TASK
+  [ERROR_CODE.TASK_NOT_FOUND]: 'Task not found',
+  [ERROR_CODE.TASK_ALREADY_EXISTS]: 'Task already exists',
+  [ERROR_CODE.TASK_QUERY_EXCEPTION]:
+    'Invalid query, please provide either id or userId',
 };
