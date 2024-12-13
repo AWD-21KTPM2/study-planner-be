@@ -29,6 +29,9 @@ export class Task extends BaseEntity {
   @Prop({ enum: TaskStatus, default: TaskStatus.TODO })
   status: TaskStatus;
 
+  // @Prop({ type: String, required: true })
+  // status: string; // Status name (e.g., "Todo", "Doing")
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true }) // Reference to the User collection
   userId: Types.ObjectId;
 }
