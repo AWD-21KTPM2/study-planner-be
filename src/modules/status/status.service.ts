@@ -22,27 +22,23 @@ export class StatusService {
   async create(createStatusDto: CreateStatusDto): Promise<Status> {
     const { userId, statuses } = createStatusDto;
 
-    // Find the existing Status document for the user
     const existingStatus = await this.statusModel.findOne({ userId }).exec();
 
     if (!existingStatus) {
-      // If no Status document exists, create a new one
       const newStatus = new this.statusModel({
         userId,
-        statuses: statuses || ['Todo', 'Doing', 'Ready for Review', 'Done'], // Use default statuses if none provided
+        statuses: statuses || ['Todo', 'Doing', 'Ready for Review', 'Done'],
       });
       return newStatus.save();
     } else {
-      // If the Status document exists, append the new status(es) to the array
       const newStatuses = statuses?.filter(
-        (status) => !existingStatus.statuses.includes(status), // Prevent duplicate statuses
+        (status) => !existingStatus.statuses.includes(status),
       );
 
       if (!newStatuses || newStatuses.length === 0) {
         throw new Error('All provided statuses already exist');
       }
 
-      // Append the new statuses and save the document
       existingStatus.statuses.push(...newStatuses);
       return existingStatus.save();
     }
