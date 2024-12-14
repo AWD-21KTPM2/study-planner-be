@@ -19,6 +19,7 @@ export class JwtMiddleware implements NestMiddleware {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
+      req[JWT_OBJECT] = null;
       return next(); // If no token, skip adding user data for backward compatibility
     }
 

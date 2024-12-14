@@ -19,8 +19,6 @@ import { RegisterUserResponse } from 'src/common/types/user.type';
 import { convertTime } from 'src/common/utils/time.util';
 import { UserNotFoundException } from 'src/common/exceptions/user.exception';
 import { GetProfileResponse } from './response/get-profile.res';
-import { pick } from 'lodash';
-import { keys } from 'ts-transformer-keys';
 
 @Injectable()
 export class UserService {
@@ -209,34 +207,16 @@ export class UserService {
     };
   }
 
-  async getProfileByEmail(email: string) {
+  async getProfileByEmail(email: string): Promise<GetProfileResponse> {
     const user = await this.userModel.findOne({ email });
 
     if (!user) {
       throw new UserNotFoundException();
     }
 
-    const mappedUser: Partial<GetProfileResponse> = pick(user, [
-      'email',
-      'name',
-      'avatar',
-      'phone',
-      'country',
-      'bio',
-      'createdAt',
-      'updatedAt',
-    ]);
+    const { refreshToken, password, authProvider, ...mappedUser } =
+      user.toObject();
 
-    // const keysOfProps = keys<GetProfileResponse>();
-    const record = new GetProfileResponse();
-    const keys = Object.keys(record).map((key) => record[key]);
-
-    console.log(record, keys, mappedUser);
-
-    // return {
-    //   // email: user.email,
-    //   // createdAt: convertTime(user.createdAt),
-    // };
     return mappedUser;
   }
 }

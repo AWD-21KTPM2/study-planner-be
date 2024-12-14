@@ -15,6 +15,8 @@ import { JWT_CONST, JWT_OBJECT } from 'src/common/constants/jwt.const';
 import { JwtPayload } from 'src/common/types/jwt.type';
 import { ResponseData } from 'src/common/types/common.type';
 import { AuthGuard } from '@nestjs/passport';
+import { UnAuthorizedException } from 'src/common/exceptions/auth.exception';
+import { JwtObjectGuard } from '../auth/jwt-object.guard';
 
 @ApiTags('users')
 @Controller('user')
@@ -52,6 +54,7 @@ export class UserController {
   }
 
   @ApiBearerAuth()
+  @UseGuards(JwtObjectGuard)
   @Get('profile')
   @ApiOkResponse({
     description: 'User profile',
@@ -59,8 +62,6 @@ export class UserController {
   })
   getProfileByEmail(@Req() req: Request) {
     const { email } = req[JWT_OBJECT];
-    console.log('email', email);
-
     return this.userService.getProfileByEmail(email);
   }
 
