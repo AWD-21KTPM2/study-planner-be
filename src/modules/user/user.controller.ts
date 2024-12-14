@@ -10,9 +10,8 @@ import { UserService } from './user.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegistryUserDto } from './dto/registry-user.dto';
-import { UnAuthorizedException } from 'src/common/exceptions/auth.exception';
 import { JwtRefreshTokenDto } from './dto/jwt-refresh-token.dto';
-import { JWT_CONST } from 'src/common/constants/jwt.const';
+import { JWT_CONST, JWT_OBJECT } from 'src/common/constants/jwt.const';
 import { JwtPayload } from 'src/common/types/jwt.type';
 import { ResponseData } from 'src/common/types/common.type';
 import { AuthGuard } from '@nestjs/passport';
@@ -44,13 +43,6 @@ export class UserController {
   @ApiBody({ type: JwtRefreshTokenDto })
   @ApiCreatedResponse({ description: 'Refresh token' })
   async refreshToken(@Body() tokenData: JwtRefreshTokenDto) {
-    return this.userService.refreshToken(tokenData);
-  }
-
-  @ApiBearerAuth()
-  @Get('profile')
-  @ApiOkResponse({ description: 'User profile' })
-  getProfile(@Body() tokenData: JwtRefreshTokenDto) {
     const refreshTokenResponse = this.userService.refreshToken(tokenData);
 
     return {
@@ -60,17 +52,14 @@ export class UserController {
   }
 
   @ApiBearerAuth()
-  @Get('profile/details')
+  @Get('profile')
   @ApiOkResponse({
     description: 'User profile',
     schema: { example: { email: 'example@email.com' } },
   })
-  getProfileByEmail(@Req() req: any) {
-    const { email } = req.query;
-
-    if (!email) {
-      throw new UnAuthorizedException();
-    }
+  getProfileByEmail(@Req() req: Request) {
+    const { email } = req[JWT_OBJECT];
+    console.log('email', email);
 
     return this.userService.getProfileByEmail(email);
   }
