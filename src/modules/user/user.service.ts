@@ -17,6 +17,10 @@ import { JwtRefreshTokenDto } from './dto/jwt-refresh-token.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserResponse } from 'src/common/types/user.type';
 import { convertTime } from 'src/common/utils/time.util';
+import { UserNotFoundException } from 'src/common/exceptions/user.exception';
+import { GetProfileResponse } from './response/get-profile.res';
+import { pick } from 'lodash';
+import { keys } from 'ts-transformer-keys';
 
 @Injectable()
 export class UserService {
@@ -209,12 +213,30 @@ export class UserService {
     const user = await this.userModel.findOne({ email });
 
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new UserNotFoundException();
     }
 
-    return {
-      email: user.email,
-      createdAt: convertTime(user.createdAt),
-    };
+    const mappedUser: Partial<GetProfileResponse> = pick(user, [
+      'email',
+      'name',
+      'avatar',
+      'phone',
+      'country',
+      'bio',
+      'createdAt',
+      'updatedAt',
+    ]);
+
+    // const keysOfProps = keys<GetProfileResponse>();
+    const record = new GetProfileResponse();
+    const keys = Object.keys(record).map((key) => record[key]);
+
+    console.log(record, keys, mappedUser);
+
+    // return {
+    //   // email: user.email,
+    //   // createdAt: convertTime(user.createdAt),
+    // };
+    return mappedUser;
   }
 }

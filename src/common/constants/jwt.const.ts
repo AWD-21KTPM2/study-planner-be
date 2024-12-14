@@ -7,3 +7,5 @@ export const JWT_CONST = {
 
   JWT_REFRESH_TOKEN_SUCCESS: 'Tokens refreshed successfully',
 };
+
+export const JWT_OBJECT = 'user';

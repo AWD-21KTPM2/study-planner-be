@@ -10,11 +10,19 @@ export class User extends BaseEntity {
   @Prop({ required: true })
   password: string;
 
-  // @Prop({ required: true })
-  // name: string;
+  name: string;
 
   @Prop({ default: '' })
   avatar: string;
+
+  @Prop({ default: '' })
+  phone: string;
+
+  @Prop({ default: '' })
+  country: string;
+
+  @Prop({ default: '' })
+  bio: string;
 
   @Prop({ enum: AuthProviderEnum, default: AuthProviderEnum.EMAIL })
   authProvider: AuthProviderEnum;
