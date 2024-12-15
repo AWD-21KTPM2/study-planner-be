@@ -10,6 +10,8 @@ import {
   AI_TASK_PLACEHOLDER,
 } from 'src/common/constants/ai-generate.const';
 import { ErrorAnalyzeTaskException } from 'src/common/exceptions/ai-generate.exception';
+import { clearJsonFromAI } from 'src/common/utils/json.util';
+import { AnalyzeTaskResponse } from './response/analyze-task.response';
 
 @Injectable()
 export class AiGenerateService {
@@ -28,7 +30,7 @@ export class AiGenerateService {
     });
   }
 
-  async analyzeTaskWithAi(): Promise<string> {
+  async analyzeTaskWithAi(): Promise<AnalyzeTaskResponse | string> {
     const filterTasks = await this.taskModel.find(
       { startDate: { $ne: null }, endDate: { $ne: null } }, // Filter condition
       'startDate endDate priority', // Projection
@@ -45,7 +47,10 @@ export class AiGenerateService {
 
     try {
       const result = await this.aiModel.generateContent(promptString);
-      return result.response.text();
+      // console.log(result.response);
+      const clearJson = clearJsonFromAI(result.response.text());
+      const jsonResult = JSON.parse(clearJson) as AnalyzeTaskResponse;
+      return jsonResult;
     } catch (error) {
       throw new ErrorAnalyzeTaskException();
     }
