@@ -43,11 +43,8 @@ export class AiGenerateService {
       JSON.stringify(filterTasks),
     );
 
-    // console.log(promptString);
-
     try {
       const result = await this.aiModel.generateContent(promptString);
-      console.log(result.response.text());
       return result.response.text();
     } catch (error) {
       throw new ErrorAnalyzeTaskException();
