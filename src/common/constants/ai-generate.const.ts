@@ -6,35 +6,21 @@ export const AI_GENERATE_CONST = {
   Criteria:
     - 'Order to do' will base 'Start Date' first and then 'Priority'
   This is the template code for results:
-  <table>
-        <thead>
-            <tr>
-                <th>No.</th>
-                <th>Task name</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Priority</th>
-                <th>Order to do</th>
-                <th>Overlap with</th>
-                <th>Overlapped period</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>1</td>
-                <td>Frontend Exercise</td>
-                <td>18:00 13/01/2020</td>
-                <td>20:00 24/01/2020</td>
-                <td>High</td>
-                <td>1</td>
-                <td>Task 2</td>
-            </tr>
-        </tbody>
-    </table>
+  [{
+    "no": 1,
+    "taskName": "Task 1",
+    "startDate": "17:00:00 13/11/2024",
+    "endDate": "17:00:00 15/11/2024",
+    "priority": "High",
+    "status": "In Progress",
+    "orderToDo": 1,
+    "overlapWith": "Task 2",
+    "overlappedPeriod": "17:00:00 15/11/2024 - 17:00:00 16/11/2024 && 17:00:00 17/11/2024 - 17:00:00 18/11/2024"
+}]
 
   Tasks:
   ${AI_TASK_PLACEHOLDER}
-  
-  Only give me html code for the table to show. 
+
+  Only give me json array, not anymore text.
   `,
 };
