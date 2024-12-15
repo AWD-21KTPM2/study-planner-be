@@ -8,13 +8,13 @@ export class Task extends BaseEntity {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   description: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   startDate: Date;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   endDate: Date;
 
   @Prop({ required: true })

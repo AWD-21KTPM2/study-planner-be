@@ -8,16 +8,16 @@ export class CreateTaskDto {
     description: 'Description',
     example: 'Study Plan for the next exam',
   })
-  description: string;
+  description?: string;
 
   @ApiProperty({
     description: 'Start Date',
     example: '2021-09-01T00:00:00.000Z',
   })
-  startDate: Date;
+  startDate?: Date;
 
   @ApiProperty({ description: 'End Date', example: '2021-09-10T00:00:00.000Z' })
-  endDate: Date;
+  endDate?: Date;
 
   @ApiProperty({ description: 'Estimated Time', example: 120 })
   estimatedTime?: number;
