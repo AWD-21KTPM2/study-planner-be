@@ -22,4 +22,7 @@ export const ERROR_MESSAGE = {
   [ERROR_CODE.TASK_ALREADY_EXISTS]: 'Task already exists',
   [ERROR_CODE.TASK_QUERY_EXCEPTION]:
     'Invalid query, please provide either id or userId',
+
+  // AI GENERATE
+  [ERROR_CODE.AI_GENERATE_EXCEPTION]: 'AI analysis for tasks failed',
 };
