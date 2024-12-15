@@ -22,7 +22,7 @@ export class TaskService {
 
     return {
       total_items: 1,
-      tasks: task,
+      tasks: [task],
     };
   }
 
@@ -72,8 +72,8 @@ export class TaskService {
     return updatedTask;
   }
 
-  async deleteTask(id: string) {
-    const task = await this.taskModel.findOne({ _id: id });
+  async deleteTask(id: string, userId: string) {
+    const task = await this.taskModel.findOne({ _id: id, userId });
     if (!task) {
       throw new TaskNotFoundException();
     }
