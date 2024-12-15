@@ -24,7 +24,7 @@ export class AiGenerateService {
       this.configService.get(ENV_CONST.GEMINI_KEY),
     );
     this.aiModel = this.generativeAi.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: AI_GENERATE_CONST.GEMINI_MODEL,
     });
   }
 

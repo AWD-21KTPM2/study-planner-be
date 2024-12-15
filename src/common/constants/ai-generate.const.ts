@@ -1,6 +1,7 @@
 export const AI_TASK_PLACEHOLDER = '__JSON_DATA__';
 
 export const AI_GENERATE_CONST = {
+  GEMINI_MODEL: 'gemini-1.5-flash',
   TASK_TEMPLATE: `
   Criteria:
     - 'Order to do' will base 'Start Date' first and then 'Priority'
