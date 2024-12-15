@@ -7,7 +7,7 @@ export class TaskNotFoundException extends BaseBusinessException {
     super(
       ERROR_CODE.TASK_NOT_FOUND,
       ERROR_MESSAGE[ERROR_CODE.TASK_NOT_FOUND],
-      401,
+      400,
     );
   }
 }
@@ -17,7 +17,7 @@ export class TaskAlreadyExistsException extends BaseBusinessException {
     super(
       ERROR_CODE.TASK_ALREADY_EXISTS,
       ERROR_MESSAGE[ERROR_CODE.TASK_ALREADY_EXISTS],
-      401,
+      400,
     );
   }
 }
@@ -27,7 +27,7 @@ export class TaskQueryException extends BaseBusinessException {
     super(
       ERROR_CODE.TASK_QUERY_EXCEPTION,
       ERROR_MESSAGE[ERROR_CODE.TASK_QUERY_EXCEPTION],
-      401,
+      400,
     );
   }
 }
