@@ -12,6 +12,7 @@ export const AI_GENERATE_CONST = {
     "startDate": "17:00:00 13/11/2024",
     "endDate": "17:00:00 15/11/2024",
     "priority": "High",
+    "status": "In Progress",
     "orderToDo": 1,
     "overlapWith": "Task 2",
     "overlappedPeriod": "17:00:00 15/11/2024 - 17:00:00 16/11/2024 && 17:00:00 17/11/2024 - 17:00:00 18/11/2024"

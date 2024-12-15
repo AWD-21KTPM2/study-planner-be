@@ -4,6 +4,7 @@ export interface AnalyzeTaskResponse {
   startDate: string;
   endDate: string;
   priority: string;
+  status: string;
   orderToDo: number;
   overlapWith: string;
   overlappedPeriod: string;

@@ -12,6 +12,7 @@ import {
 import { ErrorAnalyzeTaskException } from 'src/common/exceptions/ai-generate.exception';
 import { clearJsonFromAI } from 'src/common/utils/json.util';
 import { AnalyzeTaskResponse } from './response/analyze-task.response';
+import { TaskStatus } from 'src/common/enums/task.enum';
 
 @Injectable()
 export class AiGenerateService {
@@ -32,7 +33,11 @@ export class AiGenerateService {
 
   async analyzeTaskWithAi(): Promise<AnalyzeTaskResponse | string> {
     const filterTasks = await this.taskModel.find(
-      { startDate: { $ne: null }, endDate: { $ne: null } }, // Filter condition
+      {
+        startDate: { $ne: null },
+        endDate: { $ne: null },
+        status: { $in: [TaskStatus.TODO, TaskStatus.IN_PROGRESS] },
+      }, // Filter condition
       'startDate endDate priority', // Projection
     );
 
