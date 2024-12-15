@@ -4,7 +4,7 @@ import { TaskController } from './task.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TaskSchema } from './entites/task.entity';
 import { UserSchema } from '../user/entities/user.entity';
-
+import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -17,6 +17,10 @@ import { UserSchema } from '../user/entities/user.entity';
         schema: UserSchema,
       },
     ]),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '24h' },
+    }),
   ],
   controllers: [TaskController],
   providers: [TaskService],
