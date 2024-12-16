@@ -13,6 +13,7 @@ export const ERROR_MESSAGE = {
   [ERROR_CODE.AUTH_EMAIL_EXISTED]: 'Email already in use',
   [ERROR_CODE.AUTH_INVALID_CREDENTIALS]: 'Invalid credentials',
   [ERROR_CODE.AUTH_UNAUTHORIZED]: 'Unauthorized',
+  [ERROR_CODE.AUTH_ERROR_WHEN_REFRESH_TOKEN]: 'Error when refreshing token',
 
   // USER
   [ERROR_CODE.USER_NOT_FOUND]: 'User not found',
