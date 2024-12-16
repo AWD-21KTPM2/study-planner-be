@@ -31,3 +31,13 @@ export class EmailExistedException extends BaseBusinessException {
     );
   }
 }
+
+export class ErrorWhenRefreshTokenException extends BaseBusinessException {
+  constructor() {
+    super(
+      ERROR_CODE.AUTH_ERROR_WHEN_REFRESH_TOKEN,
+      ERROR_MESSAGE[ERROR_CODE.AUTH_ERROR_WHEN_REFRESH_TOKEN],
+      400,
+    );
+  }
+}

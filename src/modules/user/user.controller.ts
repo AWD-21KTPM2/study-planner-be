@@ -15,7 +15,7 @@ import { JWT_CONST, JWT_OBJECT } from 'src/common/constants/jwt.const';
 import { JwtPayload } from 'src/common/types/jwt.type';
 import { ResponseData } from 'src/common/types/common.type';
 import { AuthGuard } from '@nestjs/passport';
-import { UnAuthorizedException } from 'src/common/exceptions/auth.exception';
+import { ErrorWhenRefreshTokenException } from 'src/common/exceptions/auth.exception';
 import { JwtObjectGuard } from '../auth/jwt-object.guard';
 
 @ApiTags('users')
@@ -45,12 +45,16 @@ export class UserController {
   @ApiBody({ type: JwtRefreshTokenDto })
   @ApiCreatedResponse({ description: 'Refresh token' })
   async refreshToken(@Body() tokenData: JwtRefreshTokenDto) {
-    const refreshTokenResponse = this.userService.refreshToken(tokenData);
-
-    return {
-      message: JWT_CONST.JWT_REFRESH_TOKEN_SUCCESS,
-      data: refreshTokenResponse,
-    } as ResponseData<Promise<JwtPayload>>;
+    try {
+      const refreshTokenResponse =
+        await this.userService.refreshToken(tokenData);
+      return {
+        message: JWT_CONST.JWT_REFRESH_TOKEN_SUCCESS,
+        data: refreshTokenResponse,
+      } as ResponseData<JwtPayload>;
+    } catch (error) {
+      throw new ErrorWhenRefreshTokenException();
+    }
   }
 
   @ApiBearerAuth()

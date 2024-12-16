@@ -171,6 +171,10 @@ export class UserService {
 
   // Method to refresh tokens
   async refreshToken(tokenData: JwtRefreshTokenDto): Promise<JwtPayload> {
+    if (!tokenData.refreshToken) {
+      throw new InvalidRefreshToken();
+    }
+
     // Decode and verify the refresh token
     let payload: JwtPayload;
     try {
