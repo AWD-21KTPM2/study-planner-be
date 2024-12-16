@@ -88,4 +88,39 @@ export class TaskService {
   async filterTasks(query: any) {
     throw new Error('Not implemented');
   }
+
+  async searchTasks(query: any) {
+    const searchCriteria: any = {};
+
+    // Add search conditions dynamically based on query parameters
+    if (query.name) {
+      searchCriteria.name = { $regex: query.name, $options: 'i' }; // Case-insensitive name search
+    }
+    if (query.description) {
+      searchCriteria.description = { $regex: query.description, $options: 'i' }; // Case-insensitive description search
+    }
+    if (query.priority) {
+      searchCriteria.priority = query.priority; // Exact match for priority
+    }
+    if (query.status) {
+      searchCriteria.status = query.status; // Exact match for status
+    }
+    if (query.startDate || query.endDate) {
+      searchCriteria.startDate = {};
+      if (query.startDate) {
+        searchCriteria.startDate.$gte = new Date(query.startDate); // Greater than or equal to startDate
+      }
+      if (query.endDate) {
+        searchCriteria.startDate.$lte = new Date(query.endDate); // Less than or equal to endDate
+      }
+    }
+
+    // Execute the search query
+    const tasks = await this.taskModel.find(searchCriteria);
+
+    return {
+      total_items: tasks.length,
+      tasks,
+    };
+  }
 }

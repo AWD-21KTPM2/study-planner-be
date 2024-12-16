@@ -146,4 +146,35 @@ export class TaskController {
     // to be implemented
     throw new Error('Not implemented');
   }
+
+  @Get('search')
+  @ApiOkResponse({
+    description: 'Search tasks based on query parameters',
+    schema: {
+      example: {
+        message: 'Tasks retrieved successfully',
+        data: {
+          total_items: 2,
+          tasks: [
+            {
+              name: 'Study Plan',
+              description: 'Plan for the exam',
+              priority: 'MEDIUM',
+              status: 'TODO',
+              startDate: '2024-09-01T00:00:00.000Z',
+              endDate: '2024-09-10T00:00:00.000Z',
+              userId: '613f1b3b0c9a7b001f6b1f1a',
+            },
+          ],
+        },
+      },
+    },
+  })
+  async searchTasks(@Query() query: any) {
+    const result = await this.taskService.searchTasks(query);
+    return {
+      message: 'Tasks retrieved successfully',
+      data: result,
+    };
+  }
 }
