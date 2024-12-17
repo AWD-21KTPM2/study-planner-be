@@ -41,3 +41,13 @@ export class ErrorWhenRefreshTokenException extends BaseBusinessException {
     );
   }
 }
+
+export class EmailIsRequiredException extends BaseBusinessException {
+  constructor() {
+    super(
+      ERROR_CODE.AUTH_EMAIL_IS_REQUIRED,
+      ERROR_MESSAGE[ERROR_CODE.AUTH_EMAIL_IS_REQUIRED],
+      400,
+    );
+  }
+}

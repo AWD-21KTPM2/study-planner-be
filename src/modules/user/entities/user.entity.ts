@@ -7,12 +7,7 @@ export class User extends BaseEntity {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({
-    required: function (this: User) {
-      return this.authProvider === AuthProviderEnum.EMAIL;
-    },
-    default: '',
-  })
+  @Prop({ default: '' })
   password: string;
 
   name: string;
