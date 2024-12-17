@@ -14,6 +14,7 @@ export const ERROR_MESSAGE = {
   [ERROR_CODE.AUTH_INVALID_CREDENTIALS]: 'Invalid credentials',
   [ERROR_CODE.AUTH_UNAUTHORIZED]: 'Unauthorized',
   [ERROR_CODE.AUTH_ERROR_WHEN_REFRESH_TOKEN]: 'Error when refreshing token',
+  [ERROR_CODE.AUTH_EMAIL_IS_REQUIRED]: 'Email is required',
 
   // USER
   [ERROR_CODE.USER_NOT_FOUND]: 'User not found',
