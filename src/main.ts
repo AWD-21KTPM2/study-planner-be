@@ -6,9 +6,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // app.enableCors({
-  //   origin: '*', // Allows requests from any origin
-  //   methods: '*', // Allows all HTTP methods (GET, POST, PUT, DELETE, etc.)
-  //   allowedHeaders: '*', // Allows all headers
+  //   origin: 'http://localhost:3000', // Allow all origins
+  //   methods: '*', // Allow all HTTP methods
+  //   allowedHeaders: '*', // Accept all headers
+  //   credentials: true, // Allow credentials if necessary
   // });
 
   // Configure Swagger options
