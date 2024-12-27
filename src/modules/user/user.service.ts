@@ -291,7 +291,7 @@ export class UserService {
 
     const user = await this.userModel.findOne({
       passwordResetToken: resetTokenHash,
-      passwordResetExpires: { $gt: new Date() }, // Ensure token is not expired
+      passwordResetExpires: { $gt: new Date() },
     });
 
     if (!user) {
