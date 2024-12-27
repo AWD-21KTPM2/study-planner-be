@@ -29,6 +29,12 @@ export class User extends BaseEntity {
 
   @Prop({ default: '' })
   refreshToken: string;
+
+  @Prop()
+  passwordResetToken?: string;
+
+  @Prop()
+  passwordResetExpires?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

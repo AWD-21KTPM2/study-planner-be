@@ -2,6 +2,8 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
+import * as nodemailer from 'nodemailer';
 import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -222,5 +224,87 @@ export class UserService {
       user.toObject();
 
     return mappedUser;
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Generate a reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenHash = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    // Save the token and expiration in the database
+    user.passwordResetToken = resetTokenHash;
+    user.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiration
+    await user.save();
+
+    console.log('already go to sendEmail!!');
+    // Send email with reset token (implement email sending logic here)
+    await this.sendResetEmail(email, resetToken);
+  }
+
+  // private async sendResetEmail(email: string, token: string): Promise<void> {
+  //   const resetUrl = `http://your-frontend-url.com/reset-password/${token}`;
+
+  //   // Use a mailing service like SendGrid, Nodemailer, etc.
+  //   console.log(`Send password reset email to ${email} with link: ${resetUrl}`);
+  // }
+
+  private async sendResetEmail(email: string, token: string): Promise<void> {
+    // Create a Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // Use your email service (e.g., Gmail, SendGrid)
+      auth: {
+        user: this.configService.get<string>('EMAIL_USER'),
+        pass: this.configService.get<string>('EMAIL_PASS'),
+      },
+    });
+
+    const resetUrl = `${this.configService.get<string>('FE_URL')}/reset-password/${token}`;
+
+    // Send the email
+    await transporter.sendMail({
+      // from: this.configService.get<string>('EMAIL_USER'),
+      from: '"Study Planner" <no-reply@dinhquytrieu@gmail.com>',
+      to: email,
+      subject: 'Password Reset Request',
+      html: `
+        <p>You requested a password reset. Click the link below to reset your password:</p>
+        <p><a href="${resetUrl}">Reset Password</a></p>
+        <p>This link is valid for 15 minutes.</p>
+      `,
+    });
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const resetTokenHash = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    const user = await this.userModel.findOne({
+      passwordResetToken: resetTokenHash,
+      passwordResetExpires: { $gt: new Date() }, // Ensure token is not expired
+    });
+
+    if (!user) {
+      throw new HttpException(
+        'Invalid or expired token',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // Hash the new password and save
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
   }
 }
