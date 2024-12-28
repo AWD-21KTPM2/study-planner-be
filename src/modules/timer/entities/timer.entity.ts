@@ -7,17 +7,11 @@ export class Timer extends BaseEntity {
   @Prop({ type: Types.ObjectId, ref: 'Task', required: true }) // Reference to the Task collection
   taskId: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ type: Date })
   sessionStart: Date;
 
-  @Prop({ required: true })
+  @Prop({ type: Date })
   sessionEnd: Date;
-
-  @Prop({ required: true })
-  duration: number; // in minutes
-
-  @Prop({ required: true })
-  breakDuration: number; // in minutes
 
   @Prop({ required: true })
   flag: boolean; // Marks whether the event is a duration (true) or break (false)
@@ -26,4 +20,14 @@ export class Timer extends BaseEntity {
   userId: Types.ObjectId;
 }
 
-export const TimerSchema = SchemaFactory.createForClass(Timer);
+const TimerSchema = SchemaFactory.createForClass(Timer).index({
+  taskId: 1,
+  userId: 1,
+});
+
+// Assert the sessionEnd is later than sessionStart
+TimerSchema.path('sessionEnd').validate(function (value) {
+  return value > this.sessionStart;
+});
+
+export { TimerSchema };
