@@ -301,7 +301,6 @@ export class UserService {
       );
     }
 
-    // Hash the new password and save
     user.password = await bcrypt.hash(newPassword, 10);
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
