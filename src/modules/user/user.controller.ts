@@ -47,6 +47,23 @@ export class UserController {
     return this.userService.loginUser(userData);
   }
 
+  @Post('forgot-password')
+  async forgotPassword(
+    @Body('email') email: string,
+  ): Promise<{ message: string }> {
+    await this.userService.requestPasswordReset(email);
+    return { message: 'Password reset email sent' };
+  }
+
+  @Post('reset-password')
+  async resetPassword(
+    @Body('token') token: string,
+    @Body('newPassword') newPassword: string,
+  ): Promise<{ message: string }> {
+    await this.userService.resetPassword(token, newPassword);
+    return { message: 'Password has been reset' };
+  }
+
   @Post('refresh-token')
   @ApiBody({ type: JwtRefreshTokenDto })
   @ApiCreatedResponse({ description: 'Refresh token' })
