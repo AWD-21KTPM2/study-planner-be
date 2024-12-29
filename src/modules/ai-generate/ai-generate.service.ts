@@ -5,14 +5,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { ConfigService } from '@nestjs/config';
 import { ENV_CONST } from 'src/common/constants/env.const';
-import {
-  AI_GENERATE_CONST,
-  AI_TASK_PLACEHOLDER,
-} from 'src/common/constants/ai-generate.const';
-import { ErrorAnalyzeTaskException } from 'src/common/exceptions/ai-generate.exception';
+import { AI_FEEDBACK_CONST, AI_GENERATE_CONST, AI_TASK_PLACEHOLDER } from 'src/common/constants/ai-generate.const';
+import { ErrorAnalyzeTaskException, ErrorGenerateFeedbackException } from 'src/common/exceptions/ai-generate.exception';
 import { clearJsonFromAI } from 'src/common/utils/json.util';
-import { AnalyzeTaskResponse } from './response/analyze-task.response';
+import { AnalyzeTaskResponse } from './response/analyze-task.res';
 import { TaskStatus } from 'src/common/enums/task.enum';
+import { TimerService } from '../timer/timer.service';
+import { GenerateFeedbackResponse } from './response/generate-feedback.res';
+import { PartialType } from '@nestjs/mapped-types';
 
 @Injectable()
 export class AiGenerateService {
@@ -21,19 +21,19 @@ export class AiGenerateService {
 
   constructor(
     @InjectModel(Task.name) private taskModel: Model<Task>,
-    private configService: ConfigService,
+    private readonly timerService: TimerService,
+    private readonly configService: ConfigService,
   ) {
-    this.generativeAi = new GoogleGenerativeAI(
-      this.configService.get(ENV_CONST.GEMINI_KEY),
-    );
+    this.generativeAi = new GoogleGenerativeAI(this.configService.get(ENV_CONST.GEMINI_KEY));
     this.aiModel = this.generativeAi.getGenerativeModel({
       model: AI_GENERATE_CONST.GEMINI_MODEL,
     });
   }
 
-  async analyzeTaskWithAi(): Promise<AnalyzeTaskResponse | string> {
+  async analyzeTaskWithAi(userId: string): Promise<AnalyzeTaskResponse | string> {
     const filterTasks = await this.taskModel.find(
       {
+        userId,
         startDate: { $ne: null },
         endDate: { $ne: null },
         status: { $in: [TaskStatus.TODO, TaskStatus.IN_PROGRESS] },
@@ -45,10 +45,7 @@ export class AiGenerateService {
       return 'No tasks to analyze';
     }
 
-    const promptString = AI_GENERATE_CONST.TASK_TEMPLATE.replace(
-      AI_TASK_PLACEHOLDER,
-      JSON.stringify(filterTasks),
-    );
+    const promptString = AI_GENERATE_CONST.TASK_TEMPLATE.replace(AI_TASK_PLACEHOLDER, JSON.stringify(filterTasks));
 
     try {
       const result = await this.aiModel.generateContent(promptString);
@@ -57,6 +54,48 @@ export class AiGenerateService {
       return jsonResult;
     } catch (error) {
       throw new ErrorAnalyzeTaskException();
+    }
+  }
+
+  async generateFeedbackWithAi(userId: string): Promise<any> {
+    const myTasks = await this.taskModel.find({ userId }).lean();
+
+    const tasksWithTimers = await Promise.all(
+      myTasks.map(async (task) => {
+        const timers = await this.timerService.getTimersByTaskIdForInsight(task._id.toString(), userId);
+
+        const totalActualTime = timers.reduce((acc: number, curr: any) => acc + curr.actualTime, 0);
+
+        const tmp = {
+          name: task.name,
+          estimatedTime: task.estimatedTime,
+          priority: task.priority,
+          status: task.status,
+          startDate: task.startDate,
+          endDate: task.endDate,
+          totalActualTime: parseFloat((totalActualTime / 1000 / 60).toFixed(2)),
+        };
+
+        return tmp;
+      }),
+    );
+
+    if (tasksWithTimers.length === 0) {
+      return 'No tasks to generate feedback';
+    }
+
+    const promptString = AI_FEEDBACK_CONST.FEEDBACK_TEMPLATE.replace(
+      AI_TASK_PLACEHOLDER,
+      JSON.stringify(tasksWithTimers),
+    );
+
+    try {
+      const result = await this.aiModel.generateContent(promptString);
+      console.log(result.response.text());
+      return result.response.text();
+    } catch (error) {
+      console.log(error.message);
+      throw new ErrorGenerateFeedbackException();
     }
   }
 }

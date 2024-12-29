@@ -1,18 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { Task } from '../task/entites/task.entity';
-import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { TaskService } from '../task/task.service';
-import { TimerService } from '../timer/timer.service';
+import { Model } from 'mongoose';
 import { TaskStatus } from 'src/common/enums/task.enum';
-import { TimerProgressResponse } from './response/timer-progress.res';
 import { ResponseData } from 'src/common/types/common.type';
+import { Task } from '../task/entites/task.entity';
+import { TimerService } from '../timer/timer.service';
+import { TimerProgressResponse } from './response/timer-progress.res';
 
 @Injectable()
 export class InsightsService {
   constructor(
     @InjectModel(Task.name) private readonly taskModel: Model<Task>,
-    private readonly taskService: TaskService,
     private readonly timerService: TimerService,
   ) {}
 

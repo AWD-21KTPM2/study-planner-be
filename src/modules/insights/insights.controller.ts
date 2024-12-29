@@ -6,11 +6,15 @@ import { JwtPayload } from 'src/common/types/jwt.type';
 import { JwtObjectGuard } from '../auth/jwt-object.guard';
 import { TimerProgressResponse } from './response/timer-progress.res';
 import { ResponseData } from 'src/common/types/common.type';
+import { AiGenerateService } from '../ai-generate/ai-generate.service';
 
 @ApiTags('insights')
 @Controller('insights')
 export class InsightsController {
-  constructor(private readonly insightsService: InsightsService) {}
+  constructor(
+    private readonly insightsService: InsightsService,
+    private readonly aiGenerateService: AiGenerateService,
+  ) {}
 
   @Get('time-progress')
   @ApiBearerAuth()

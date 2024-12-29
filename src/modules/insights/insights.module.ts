@@ -7,6 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from '../user/entities/user.entity';
 import { TimerSchema } from '../timer/entities/timer.entity';
 import { TimerService } from '../timer/timer.service';
+import { AiGenerateService } from '../ai-generate/ai-generate.service';
 
 @Module({
   imports: [
@@ -26,6 +27,6 @@ import { TimerService } from '../timer/timer.service';
     ]),
   ],
   controllers: [InsightsController],
-  providers: [InsightsService, TaskService, TimerService],
+  providers: [InsightsService, TaskService, TimerService, AiGenerateService],
 })
 export class InsightsModule {}
