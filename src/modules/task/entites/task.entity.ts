@@ -20,9 +20,6 @@ export class Task extends BaseEntity {
   @Prop({ required: true })
   estimatedTime: number; // in minutes
 
-  @Prop({ required: false })
-  actualTime: number; // in minutes
-
   @Prop({ enum: TaskPriority, default: TaskPriority.MEDIUM })
   priority: TaskPriority;
 
