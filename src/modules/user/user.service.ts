@@ -272,7 +272,7 @@ export class UserService {
     // Send the email
     await transporter.sendMail({
       // from: this.configService.get<string>('EMAIL_USER'),
-      from: '"Study Planner" <no-reply@dinhquytrieu@gmail.com>',
+      from: '"Study Planner" <no-reply@studyplanner090@gmail.com>',
       to: email,
       subject: 'Password Reset Request',
       html: `
