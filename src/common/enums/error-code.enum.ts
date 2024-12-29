@@ -23,4 +23,7 @@ export enum ERROR_CODE {
 
   // AI GENERATE
   AI_GENERATE_EXCEPTION = 'AIG_0010',
+
+  // TIMER
+  TIMER_NOT_FOUND = 'TMR_0010',
 }
