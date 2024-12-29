@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Timer } from 'src/modules/timer/entities/timer.entity';
 import { Task } from 'src/modules/task/entites/task.entity';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User } from '../user/entities/user.entity';
 import { TaskNotFoundException } from 'src/common/exceptions/task.exception';
 import { TimerNotFoundException } from 'src/common/exceptions/timer.exceptions';
@@ -61,5 +61,36 @@ export class TimerService {
     await timer.save();
 
     return timer;
+  }
+
+  async getTimersByTaskIdForInsight(
+    taskId: string,
+    userId: string,
+  ): Promise<any> {
+    const timerList = await this.timerModel.aggregate([
+      {
+        $match: {
+          taskId,
+          userId,
+        },
+      },
+      {
+        $project: {
+          actualTime: {
+            $cond: [
+              {
+                $and: [
+                  { $ifNull: ['$sessionStart', false] },
+                  { $ifNull: ['$sessionEnd', false] },
+                ],
+              },
+              { $subtract: ['$sessionEnd', '$sessionStart'] },
+              null,
+            ],
+          },
+        },
+      },
+    ]);
+    return timerList;
   }
 }

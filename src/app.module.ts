@@ -10,6 +10,7 @@ import { JwtMiddleware } from './modules/auth/jwt.middleware';
 import { TaskModule } from './modules/task/task.module';
 import { TimerModule } from './modules/timer/timer.module';
 import { AiGenerateModule } from './modules/ai-generate/ai-generate.module';
+import { InsightsModule } from './modules/insights/insights.module';
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ dotenv.config();
     TaskModule,
     TimerModule,
     AiGenerateModule,
+    InsightsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -52,7 +52,6 @@ export class AiGenerateService {
 
     try {
       const result = await this.aiModel.generateContent(promptString);
-      // console.log(result.response);
       const clearJson = clearJsonFromAI(result.response.text());
       const jsonResult = JSON.parse(clearJson) as AnalyzeTaskResponse;
       return jsonResult;
