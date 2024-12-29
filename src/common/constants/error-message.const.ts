@@ -27,6 +27,7 @@ export const ERROR_MESSAGE = {
 
   // AI GENERATE
   [ERROR_CODE.AI_GENERATE_EXCEPTION]: 'AI analysis for tasks failed',
+  [ERROR_CODE.AI_GENERATE_FEEDBACK_EXCEPTION]: 'AI generate feedback failed',
 
   // TIMER
   [ERROR_CODE.TIMER_NOT_FOUND]: 'Timer not found',

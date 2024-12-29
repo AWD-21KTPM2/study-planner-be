@@ -11,3 +11,13 @@ export class ErrorAnalyzeTaskException extends BaseBusinessException {
     );
   }
 }
+
+export class ErrorGenerateFeedbackException extends BaseBusinessException {
+  constructor() {
+    super(
+      ERROR_CODE.AI_GENERATE_FEEDBACK_EXCEPTION,
+      ERROR_MESSAGE[ERROR_CODE.AI_GENERATE_FEEDBACK_EXCEPTION],
+      500,
+    );
+  }
+}
