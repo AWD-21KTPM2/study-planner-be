@@ -9,10 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 import { JWT_CONST } from 'src/common/constants/jwt.const';
-import {
-  EmailExistedException,
-  InvalidCredentialsException,
-} from 'src/common/exceptions/auth.exception';
+import { EmailExistedException, InvalidCredentialsException } from 'src/common/exceptions/auth.exception';
 import { InvalidRefreshToken } from 'src/common/exceptions/jwt.exception';
 import { JwtPayload } from 'src/common/types/jwt.type';
 import { JwtRefreshTokenDto } from './dto/jwt-refresh-token.dto';
@@ -21,6 +18,7 @@ import { RegisterUserResponse } from 'src/common/types/user.type';
 import { convertTime } from 'src/common/utils/time.util';
 import { UserNotFoundException } from 'src/common/exceptions/user.exception';
 import { GetProfileResponse } from './response/get-profile.res';
+import { AuthProviderEnum } from 'src/common/enums/auth.enum';
 
 @Injectable()
 export class UserService {
@@ -31,16 +29,11 @@ export class UserService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {
-    this.googleClient = new OAuth2Client(
-      this.configService.get('GOOGLE_CLIENT_ID'),
-    );
+    this.googleClient = new OAuth2Client(this.configService.get('GOOGLE_CLIENT_ID'));
   }
 
   // Registration method without token generation
-  async registerUser(userData: {
-    email: string;
-    password: string;
-  }): Promise<RegisterUserResponse> {
+  async registerUser(userData: { email: string; password: string }): Promise<RegisterUserResponse> {
     const { email, password } = userData;
 
     // Check if user exists
@@ -69,9 +62,7 @@ export class UserService {
 
   async loginUser(userData: LoginUserDto) {
     const { email, password } = userData;
-    const refreshTokenExpiration = this.configService.get<string>(
-      JWT_CONST.JWT_REFRESH_EXPIRES_IN,
-    );
+    const refreshTokenExpiration = this.configService.get<string>(JWT_CONST.JWT_REFRESH_EXPIRES_IN);
 
     // Find user by email
     const user = await this.userModel.findOne({ email });
@@ -109,14 +100,11 @@ export class UserService {
   }
 
   async fetchGoogleProfile(token: string) {
-    const payload = await fetch(
-      `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    const payload = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
 
     if (!payload.ok) {
       throw new HttpException('Invalid Google token', HttpStatus.UNAUTHORIZED);
@@ -140,6 +128,7 @@ export class UserService {
       user = new this.userModel({
         email,
         password: '', // Password is empty because it's OAuth
+        authProvider: AuthProviderEnum.GOOGLE,
         // name,
         // profilePicture: picture,
       });
@@ -153,9 +142,7 @@ export class UserService {
     };
     const accessToken = this.jwtService.sign(jwtPayload);
     const refreshToken = this.jwtService.sign(jwtPayload, {
-      expiresIn: this.configService.get<string>(
-        JWT_CONST.JWT_REFRESH_EXPIRES_IN,
-      ),
+      expiresIn: this.configService.get<string>(JWT_CONST.JWT_REFRESH_EXPIRES_IN),
     });
 
     return {
@@ -220,8 +207,7 @@ export class UserService {
       throw new UserNotFoundException();
     }
 
-    const { refreshToken, password, authProvider, ...mappedUser } =
-      user.toObject();
+    const { refreshToken, password, authProvider, ...mappedUser } = user.toObject();
 
     return mappedUser;
   }
@@ -235,10 +221,7 @@ export class UserService {
 
     // Generate a reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenHash = crypto
-      .createHash('sha256')
-      .update(resetToken)
-      .digest('hex');
+    const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
 
     // Save the token and expiration in the database
     user.passwordResetToken = resetTokenHash;
@@ -284,10 +267,7 @@ export class UserService {
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    const resetTokenHash = crypto
-      .createHash('sha256')
-      .update(token)
-      .digest('hex');
+    const resetTokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
     const user = await this.userModel.findOne({
       passwordResetToken: resetTokenHash,
@@ -295,10 +275,7 @@ export class UserService {
     });
 
     if (!user) {
-      throw new HttpException(
-        'Invalid or expired token',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException('Invalid or expired token', HttpStatus.BAD_REQUEST);
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
