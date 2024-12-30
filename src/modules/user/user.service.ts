@@ -36,6 +36,10 @@ export class UserService {
   async registerUser(userData: { email: string; password: string }): Promise<RegisterUserResponse> {
     const { email, password } = userData;
 
+    if (!email || !password) {
+      throw new InvalidCredentialsException();
+    }
+
     // Check if user exists
     const existingUser = await this.userModel.findOne({ email });
     if (existingUser) {
@@ -62,6 +66,11 @@ export class UserService {
 
   async loginUser(userData: LoginUserDto) {
     const { email, password } = userData;
+
+    if (!email || !password) {
+      throw new InvalidCredentialsException();
+    }
+
     const refreshTokenExpiration = this.configService.get<string>(JWT_CONST.JWT_REFRESH_EXPIRES_IN);
 
     // Find user by email
