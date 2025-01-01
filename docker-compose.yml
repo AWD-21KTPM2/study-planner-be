@@ -10,4 +10,4 @@ services:
       - .env
     restart: unless-stopped
     ports:
-      - '9001:3000'
+      - '3000:3000'
