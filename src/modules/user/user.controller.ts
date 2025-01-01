@@ -1,11 +1,5 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -15,10 +9,7 @@ import { JWT_CONST, JWT_OBJECT } from 'src/common/constants/jwt.const';
 import { JwtPayload } from 'src/common/types/jwt.type';
 import { ResponseData } from 'src/common/types/common.type';
 import { AuthGuard } from '@nestjs/passport';
-import {
-  EmailIsRequiredException,
-  ErrorWhenRefreshTokenException,
-} from 'src/common/exceptions/auth.exception';
+import { EmailIsRequiredException, ErrorWhenRefreshTokenException } from 'src/common/exceptions/auth.exception';
 import { JwtObjectGuard } from '../auth/jwt-object.guard';
 
 @ApiTags('users')
@@ -29,11 +20,30 @@ export class UserController {
     private readonly jwtService: JwtService,
   ) {}
 
+  // @Post('register')
+  // @ApiCreatedResponse({ description: 'User registered' })
+  // @ApiBody({ type: RegistryUserDto })
+  // async register(@Body() userData: RegistryUserDto) {
+  //   return this.userService.registerUser(userData);
+  // }
+
   @Post('register')
-  @ApiCreatedResponse({ description: 'User registered' })
+  @ApiCreatedResponse({ description: 'User registered. OTP sent to email.' })
   @ApiBody({ type: RegistryUserDto })
   async register(@Body() userData: RegistryUserDto) {
     return this.userService.registerUser(userData);
+  }
+
+  @Post('activate')
+  @ApiCreatedResponse({ description: 'User activated' })
+  @ApiBody({
+    schema: {
+      example: { email: 'user@example.com', otp: '123456' },
+    },
+  })
+  async activate(@Body('email') email: string, @Body('otp') otp: string): Promise<{ message: string }> {
+    await this.userService.activateUser(email, otp);
+    return { message: 'Account successfully activated' };
   }
 
   @Post('login')
@@ -47,9 +57,7 @@ export class UserController {
   }
 
   @Post('forgot-password')
-  async forgotPassword(
-    @Body('email') email: string,
-  ): Promise<{ message: string }> {
+  async forgotPassword(@Body('email') email: string): Promise<{ message: string }> {
     await this.userService.requestPasswordReset(email);
     return { message: 'Password reset email sent' };
   }
@@ -68,8 +76,7 @@ export class UserController {
   @ApiCreatedResponse({ description: 'Refresh token' })
   async refreshToken(@Body() tokenData: JwtRefreshTokenDto) {
     try {
-      const refreshTokenResponse =
-        await this.userService.refreshToken(tokenData);
+      const refreshTokenResponse = await this.userService.refreshToken(tokenData);
       return {
         message: JWT_CONST.JWT_REFRESH_TOKEN_SUCCESS,
         data: refreshTokenResponse,
