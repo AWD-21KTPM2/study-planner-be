@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   study-planner-be:
-    image: ngductuan/study-planner-be:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: study-planner-be
     env_file:
       - .env
