@@ -33,6 +33,37 @@ export class UserService {
   }
 
   // Registration method without token generation
+  // async registerUser(userData: { email: string; password: string }): Promise<RegisterUserResponse> {
+  //   const { email, password } = userData;
+
+  //   if (!email || !password) {
+  //     throw new InvalidCredentialsException();
+  //   }
+
+  //   // Check if user exists
+  //   const existingUser = await this.userModel.findOne({ email });
+  //   if (existingUser) {
+  //     throw new EmailExistedException();
+  //   }
+
+  //   // Hash password
+  //   const hashedPassword = await bcrypt.hash(password, 10);
+
+  //   // Create and save user
+  //   const newUser = new this.userModel({
+  //     email,
+  //     password: hashedPassword,
+  //   });
+  //   await newUser.save();
+
+  //   return {
+  //     id: newUser._id.toString(),
+  //     email: newUser.email,
+  //     createdAt: convertTime(newUser.createdAt),
+  //     updatedAt: convertTime(newUser.updatedAt),
+  //   };
+  // }
+
   async registerUser(userData: { email: string; password: string }): Promise<RegisterUserResponse> {
     const { email, password } = userData;
 
@@ -40,21 +71,23 @@ export class UserService {
       throw new InvalidCredentialsException();
     }
 
-    // Check if user exists
     const existingUser = await this.userModel.findOne({ email });
     if (existingUser) {
       throw new EmailExistedException();
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = await this.generateOTP();
 
-    // Create and save user
     const newUser = new this.userModel({
       email,
       password: hashedPassword,
+      otp,
+      otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // OTP valid for 10 minutes
     });
     await newUser.save();
+
+    await this.sendActivationEmail(email, otp);
 
     return {
       id: newUser._id.toString(),
@@ -62,6 +95,45 @@ export class UserService {
       createdAt: convertTime(newUser.createdAt),
       updatedAt: convertTime(newUser.updatedAt),
     };
+  }
+
+  private async sendActivationEmail(email: string, otp: string): Promise<void> {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: this.configService.get<string>('EMAIL_USER'),
+        pass: this.configService.get<string>('EMAIL_PASS'),
+      },
+    });
+
+    await transporter.sendMail({
+      from: '"Study Planner" <no-reply@studyplanner.com>',
+      to: email,
+      subject: 'Activate Your Account',
+      html: `<p>Your OTP for account activation is: <b>${otp}</b></p>
+             <p>The OTP is valid for 10 minutes.</p>`,
+    });
+  }
+
+  async activateUser(email: string, otp: string): Promise<void> {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new UserNotFoundException();
+    }
+
+    if (user.isActivated) {
+      throw new HttpException('Account already activated', HttpStatus.BAD_REQUEST);
+    }
+
+    if (user.otp !== otp || user.otpExpiresAt < new Date()) {
+      throw new HttpException('Invalid or expired OTP', HttpStatus.BAD_REQUEST);
+    }
+
+    user.isActivated = true;
+    user.otp = undefined;
+    user.otpExpiresAt = undefined;
+    await user.save();
   }
 
   async loginUser(userData: LoginUserDto) {
@@ -291,5 +363,9 @@ export class UserService {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save();
+  }
+
+  async generateOTP(): Promise<string> {
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
 }

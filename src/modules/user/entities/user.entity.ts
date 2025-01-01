@@ -35,6 +35,15 @@ export class User extends BaseEntity {
 
   @Prop()
   passwordResetExpires?: Date;
+
+  @Prop({ default: false })
+  isActivated: boolean;
+
+  @Prop()
+  otp?: string;
+
+  @Prop()
+  otpExpiresAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
