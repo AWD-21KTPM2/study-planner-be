@@ -1,0 +1,10 @@
+node_modules
+Dockerfile*
+.git
+.github
+.gitignore
+dist/**
+README.md
+.DS_Store
+.husky
+.vscode/*
