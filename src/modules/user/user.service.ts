@@ -19,6 +19,7 @@ import { convertTime } from 'src/common/utils/time.util';
 import { UserNotFoundException } from 'src/common/exceptions/user.exception';
 import { GetProfileResponse } from './response/get-profile.res';
 import { AuthProviderEnum } from 'src/common/enums/auth.enum';
+import { EditProfileDTO } from './dto/edit-profile.dto';
 
 @Injectable()
 export class UserService {
@@ -291,6 +292,16 @@ export class UserService {
     const { refreshToken, password, authProvider, ...mappedUser } = user.toObject();
 
     return mappedUser;
+  }
+
+  async editProfileById(id: string, dto: EditProfileDTO): Promise<void> {
+    const user = await this.userModel.findById(id);
+
+    if (!user) {
+      throw new UserNotFoundException();
+    }
+
+    await user.updateOne(dto);
   }
 
   async requestPasswordReset(email: string): Promise<void> {

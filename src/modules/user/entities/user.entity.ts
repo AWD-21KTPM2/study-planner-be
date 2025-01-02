@@ -10,6 +10,7 @@ export class User extends BaseEntity {
   @Prop({ default: '' })
   password: string;
 
+  @Prop({ default: '' })
   name: string;
 
   @Prop({ default: '' })

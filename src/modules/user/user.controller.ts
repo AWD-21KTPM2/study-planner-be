@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { JwtService } from '@nestjs/jwt';
@@ -11,6 +11,7 @@ import { ResponseData } from 'src/common/types/common.type';
 import { AuthGuard } from '@nestjs/passport';
 import { EmailIsRequiredException, ErrorWhenRefreshTokenException } from 'src/common/exceptions/auth.exception';
 import { JwtObjectGuard } from '../auth/jwt-object.guard';
+import { EditProfileDTO } from './dto/edit-profile.dto';
 
 @ApiTags('users')
 @Controller('user')
@@ -96,6 +97,25 @@ export class UserController {
   getProfileByEmail(@Req() req: Request) {
     const { email } = req[JWT_OBJECT];
     return this.userService.getProfileByEmail(email);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtObjectGuard)
+  @Put('edit-profile')
+  @ApiOkResponse({ description: 'Profile edited' })
+  @ApiBody({
+    schema: {
+      example: {
+        name: 'John Doe',
+        phone: '1234567890',
+        country: 'India',
+        bio: 'I am a developer',
+      } as EditProfileDTO,
+    },
+  })
+  async editProfile(@Req() req: Request, @Body() editData: EditProfileDTO) {
+    const { id } = req[JWT_OBJECT] as JwtPayload;
+    await this.userService.editProfileById(id, editData);
   }
 
   // New endpoint for Google OAuth login
