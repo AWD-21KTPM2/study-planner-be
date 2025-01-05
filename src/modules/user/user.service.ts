@@ -311,6 +311,11 @@ export class UserService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
+    // Check if the user is authenticated via Google
+    if (user.authProvider === AuthProviderEnum.GOOGLE) {
+      throw new HttpException('Password reset is not available for Google-authenticated users', HttpStatus.BAD_REQUEST);
+    }
+
     // Generate a reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
